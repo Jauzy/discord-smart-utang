@@ -4,9 +4,10 @@ const {
 } = require('discord.js');
 
 const {
-    token,
     prefix
 } = require('./config.json');
+
+const token = process.env.TOKEN
 
 const client = new Client({
     intents: ["GUILDS", "GUILD_MESSAGES", "GUILD_VOICE_STATES"]
