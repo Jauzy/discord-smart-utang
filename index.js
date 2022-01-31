@@ -2,7 +2,6 @@ require('dotenv').config()
 
 const {
     Client,
-    Collection
 } = require('discord.js');
 
 const {
@@ -11,45 +10,48 @@ const {
 
 const token = process.env.TOKEN.toString()
 
-// console.log(token)
-
 const client = new Client({
     intents: ["GUILDS", "GUILD_MESSAGES", "GUILD_VOICE_STATES"]
 });
 
-const fs = require('fs')
-const fsPromises = fs.promises;
-const path = require('path');
-// client.commands = new Collection()
+const sequelize = require("sequelize");
 
-// const commandFiles = fs.readdirSync('./commands/').filter(file => file.endsWith('.js'))
-// for(const file of commandFiles){
-//     const command = require(`./commands/${file}`)
-//     client.commands.set(command.name, command)
-// }
+const db = require("./models/index");
+db.sequelize.sync().then(() => {
+        console.log('Connection has been established successfully.');
+    })
+    .catch(err => {
+        console.error('Unable to connect to the database:', err);
+    });
 
-async function readingJSON () {
-    const test = await fsPromises.readFile('./data_utang.json')
+const Utang = db.utang 
 
-    return JSON.parse(test)
+async function readData(origin, target) {
+    let where = {}
+    if(origin)
+        where = {utang_origin: origin}
+    if(target) where = {...where, utang_target: target}
+    return await Utang.findAll({
+        attributes: [
+            'utang_origin', 'utang_target', [sequelize.fn('sum', sequelize.col('utang_amount')), 'total_amount'],
+        ],
+        where,
+        order: [
+            ['utang_origin', 'ASC'],
+            ['utang_target', 'ASC'],
+        ],
+        group: ['utang_origin', 'utang_target']
+    })
 }
 
-async function writeJSON (data) {
-    try {
-        console.log("data :", data)
-        const pre_data = JSON.stringify(data)
-        console.log("pre_data :", pre_data)
-        const test = await fsPromises.writeFile('./data_utang.json', pre_data)
-        console.log("test :", test)
-        return test
-    } catch (error) {
-        console.log(error)
-        return error
-    }
-   
+async function createData(origin, target, amount){
+    return await Utang.create({
+        utang_origin: origin,
+        utang_target: target,
+        utang_amount: amount
+    })
 }
 
-let utang_list = {}
 
 client.once('ready', () => {
     console.log(token, prefix);
@@ -57,48 +59,52 @@ client.once('ready', () => {
 
 client.on('message', async message => {
     if (!message.content.startsWith(prefix) || message.author.bot) return
-    const args = message.content.slice(prefix.length).split(/ +/) 
+    const args = message.content.slice(prefix.length).split(/ +/)
 
-    const utang_list = await readingJSON()
-    
+    const utang_list = await readData() 
+
     if (args[0] === 'list') {
-        let list = '\n'
-        console.log(Object.keys(utang_list))
-        Object.keys(utang_list).forEach(key => {
-            let keys = Object.keys(utang_list[key])
-            keys.map(keyd => {
-                list += `${key} ke ${keyd} => Rp. ${new Intl.NumberFormat().format(utang_list[key][keyd])}\n`
-            })
-        })
+        let list = '~ LIST UTANG ~\n'
+        await Promise.all(utang_list.map( async utang => {
+            list += `${utang.utang_origin} - ${utang.utang_target} : ${new Intl.NumberFormat().format(utang.dataValues.total_amount)}\n`
+        }))
         await message.reply(list)
-    } else {
-        if (!utang_list[args[0]]) utang_list[args[0]] = {}
-        if (!utang_list[args[0]][args[2]]) utang_list[args[0]][args[2]] = 0
-        if (!utang_list[args[2]]) utang_list[args[2]] = {}
-        if (!utang_list[args[2]][args[0]]) utang_list[args[2]][args[0]] = 0
+    } 
+    else {
+        let origin_to_target = await readData(args[0], args[2])
+        let target_to_origin = await readData(args[2], args[0])
+        origin_to_target = origin_to_target?.[0]?.dataValues?.total_amount
+        target_to_origin = target_to_origin?.[0]?.dataValues?.total_amount 
+
         if (args[1] == 'utang') {
-            if (utang_list[args[2]][args[0]] > 0) {
-                utang_list[args[0]][args[2]] = Math.abs(parseInt(args[3]) - utang_list[args[2]][args[0]])
-                utang_list[args[2]][args[0]] = 0
-                await message.reply(`utang berhasil ditambahkan, ${args[0]} sekarang memiliki utang sebesar Rp. ${new Intl.NumberFormat().format(utang_list[args[0]][args[2]])}`);
+            if (target_to_origin > 0) {
+                console.log(target_to_origin, target_to_origin > parseInt(args[3]))
+                if(target_to_origin > parseInt(args[3])){
+                    await createData(args[2], args[0], `-${args[3]}`)
+                    await message.reply(`utang berhasil ditambahkan`);
+                } else {
+                    let utang_left = Math.abs(target_to_origin - parseInt(args[3]))
+                    await createData(args[2], args[0], `-${target_to_origin}`)
+                    await createData(args[0], args[2], `${utang_left}`)
+                    await message.reply(`utang berhasil ditambahkan`);
+                }
             } else {
-                utang_list[args[0]][args[2]] += parseInt(args[3])
-                await message.reply(`utang berhasil ditambahkan, ${args[0]} memiliki utang sebesar Rp. ${new Intl.NumberFormat().format(utang_list[args[0]][args[2]])}`);
+                await createData(args[0], args[2], args[3])
+                await message.reply(`utang berhasil ditambahkan`);
             }
-        } else if (args[1] == 'bayar') {
-            if (utang_list[args[0]][args[2]] < parseInt(args[3])) {
-                utang_list[args[2]][args[0]] = parseInt(args[3]) - utang_list[args[0]][args[2]]
-                utang_list[args[0]][args[2]] = 0
-                await message.reply(`utang berhasil dibayar, ${args[2]} sekarang memiliki utang sebesar Rp. ${new Intl.NumberFormat().format(utang_list[args[2]][args[0]])}`);
-            } else {
-                utang_list[args[0]][args[2]] = utang_list[args[0]][args[2]] - parseInt(args[3])
-                await message.reply(`utang berhasil dibayar, ${args[0]} masih memiliki utang sebesar Rp. ${new Intl.NumberFormat().format(utang_list[args[0]][args[1]])}`);
+        } 
+        else if (args[1] == 'bayar') {
+            if(origin_to_target < parseInt(args[3])){
+                await createData(args[0], args[2], `-${origin_to_target}`)
+                await createData(args[2], args[0], parseInt(args[3]) - origin_to_target)
+                await message.reply(`utang berhasil dibayar`);
+            } 
+            else {
+                await createData(args[0], args[2], `-${parseInt(args[3])}`)
+                await message.reply(`utang berhasil dibayar`);
             }
         }
     }
-
-    const check = await writeJSON(utang_list)
-    console.log(check)
 })
 
 client.login(token);

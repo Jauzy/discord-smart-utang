@@ -1,2 +1,5 @@
 discord.js
 dotenv
+sequelize
+pg
+pg-hstore
