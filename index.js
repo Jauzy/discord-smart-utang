@@ -61,14 +61,23 @@ client.on('message', async message => {
     if (!message.content.startsWith(prefix) || message.author.bot) return
     const args = message.content.slice(prefix.length).split(/ +/)
 
-    const utang_list = await readData() 
-
+    
     if (args[0] === 'list') {
-        let list = '~ LIST UTANG ~\n'
-        await Promise.all(utang_list.map( async utang => {
-            list += `${utang.utang_origin} - ${utang.utang_target} : ${new Intl.NumberFormat().format(utang.dataValues.total_amount)}\n`
-        }))
-        await message.reply(list)
+        if(args[1] == 'utang'){
+            const utang_list = await readData(args[2]) 
+            let list = '~ LIST UTANG ~\n'
+            await Promise.all(utang_list.map( async utang => {
+                list += `${utang.utang_origin} - ${utang.utang_target} : ${new Intl.NumberFormat().format(utang.dataValues.total_amount)}\n`
+            }))
+            await message.reply(list)
+        } else {
+            const utang_list = await readData() 
+            let list = '~ LIST UTANG ~\n'
+            await Promise.all(utang_list.map( async utang => {
+                list += `${utang.utang_origin} - ${utang.utang_target} : ${new Intl.NumberFormat().format(utang.dataValues.total_amount)}\n`
+            }))
+            await message.reply(list)
+        }
     } 
     else {
         let origin_to_target = await readData(args[0], args[2])
@@ -78,7 +87,6 @@ client.on('message', async message => {
 
         if (args[1] == 'utang') {
             if (target_to_origin > 0) {
-                console.log(target_to_origin, target_to_origin > parseInt(args[3]))
                 if(target_to_origin > parseInt(args[3])){
                     await createData(args[2], args[0], `-${args[3]}`)
                     await message.reply(`utang berhasil ditambahkan`);
