@@ -70,7 +70,7 @@ client.on('message', async message => {
                 const utang_list = await readData(args[2]) 
                 let list = '~ LIST UTANG ~\n'
                 await Promise.all(utang_list.map( async utang => {
-                    list += `${utang.utang_origin} - ${utang.utang_target} : ${new Intl.NumberFormat().format(utang.dataValues.total_amount)}\n`
+                    list += `${utang.utang_origin} - ${utang.utang_target} : Rp. ${new Intl.NumberFormat().format(utang.dataValues.total_amount)}\n`
                 }))
                 await message.reply(list)
             }
@@ -78,7 +78,7 @@ client.on('message', async message => {
             const utang_list = await readData() 
             let list = '~ LIST UTANG ~\n'
             await Promise.all(utang_list.map( async utang => {
-                list += `${utang.utang_origin} - ${utang.utang_target} : ${new Intl.NumberFormat().format(utang.dataValues.total_amount)}\n`
+                list += `${utang.utang_origin} - ${utang.utang_target} : Rp. ${new Intl.NumberFormat().format(utang.dataValues.total_amount)}\n`
             }))
             await message.reply(list)
         }
