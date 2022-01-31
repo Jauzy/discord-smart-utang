@@ -57,12 +57,14 @@ client.once('ready', () => {
 
 client.on('message', async message => {
     if (!message.content.startsWith(prefix) || message.author.bot) return
-    const args = message.content.slice(prefix.length).split(/ +/)
+    const args = message.content.slice(prefix.length+1).split(/ +/)
+
+    console.log(args, prefix, prefix.length+1)
 
     if(!args[0]) await message.reply('oi ngapain su, masukin commandnya lah. menghadeh')
     else if (args[0] === 'list') {
         if(args[1] == 'utang'){
-            if(args[2]){
+            if(!args[2]){
                 await message.reply('masukan parameter orang yang dicari! menghadeh. ex: oi list utang joji')
             } else {
                 const utang_list = await readData(args[2]) 
