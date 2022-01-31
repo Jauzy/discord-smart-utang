@@ -4,10 +4,8 @@ const {
     Client,
 } = require('discord.js');
 
-const {
-    prefix
-} = require('./config.json');
 
+const prefix = process.env.PREFIX
 const token = process.env.TOKEN.toString()
 
 const client = new Client({
