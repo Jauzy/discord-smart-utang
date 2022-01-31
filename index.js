@@ -119,6 +119,9 @@ client.on('message', async message => {
                     await message.reply(`utang berhasil dibayar`);
                 }
             }
+            else {
+                await message.reply('commandnya salah oi. menghadeh.')
+            }
         }
     }
 })
