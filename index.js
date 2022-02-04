@@ -24,6 +24,10 @@ db.sequelize.sync().then(() => {
 
 const Utang = db.utang 
 
+async function readAll(){
+    return await Utang.findAll()
+}
+
 async function readData(origin, target) {
     let where = {}
     if(origin)
@@ -63,6 +67,16 @@ async function printReply(message, args){
     await message.reply(list)
 }
 
+async function printLogs(message){
+    let utang_list = await readAll()
+    let list = '~ LOG UTANG ~\n'
+    await Promise.all(utang_list.map( async utang => {
+        let cmd = 'bayar'
+        if(utang.dataValues.total_amount > 0) cmd = 'utang'
+        list += `Transaction '${cmd.toUpperCase()}' from ${utang.utang_origin} to ${utang.utang_target} Rp. ${new Intl.NumberFormat().format(utang.dataValues.total_amount)} on ${utang.createdAt}, issued by ${utang.utang_issuedby} on ${utang.utang_issuedchannel}\n`
+    }))
+    await message.reply(list)
+}
 
 client.once('ready', () => {
     console.log(token, prefix);
@@ -73,6 +87,9 @@ client.on('message', async message => {
     const args = message.content.slice(prefix.length+1).split(/ +/)
 
     if(!args[0]) await message.reply('oi ngapain su, masukin commandnya lah. menghadeh')
+    else if(args[0] == 'logs'){
+        printLogs(message)
+    }
     else if (args[0] === 'list') {
         if(args[1] == 'utang'){
             if(!args[2]){
