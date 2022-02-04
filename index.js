@@ -90,9 +90,9 @@ client.on('message', async message => {
     const args = message.content.slice(prefix.length+1).split(/ +/)
 
     if(!args[0]) await message.reply('oi ngapain su, masukin commandnya lah. menghadeh')
-    else if(args[0] == 'logs'){
-        printLogs(message)
-    }
+    // else if(args[0] == 'logs'){
+    //     printLogs(message)
+    // }
     else if (args[0] === 'list') {
         if(args[1] == 'utang'){
             if(!args[2]){
