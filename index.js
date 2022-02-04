@@ -42,12 +42,25 @@ async function readData(origin, target) {
     })
 }
 
-async function createData(origin, target, amount){
+async function createData(message,origin, target, amount){
     return await Utang.create({
         utang_origin: origin,
         utang_target: target,
-        utang_amount: amount
+        utang_amount: amount,
+        utang_issuedby: message.member.user.username,
+        utang_issuedchannel: message.member.guild.name
     })
+}
+
+async function printReply(message, args){
+    let utang_list
+    if(args) utang_list = await readData(args) 
+    else utang_list = await readData()
+    let list = '~ LIST UTANG ~\n'
+    await Promise.all(utang_list.map( async utang => {
+        list += `${utang.utang_origin} - ${utang.utang_target} : Rp. ${new Intl.NumberFormat().format(utang.dataValues.total_amount)}\n`
+    }))
+    await message.reply(list)
 }
 
 
@@ -59,28 +72,16 @@ client.on('message', async message => {
     if (!message.content.startsWith(prefix) || message.author.bot) return
     const args = message.content.slice(prefix.length+1).split(/ +/)
 
-    console.log(args, prefix, prefix.length+1)
-
     if(!args[0]) await message.reply('oi ngapain su, masukin commandnya lah. menghadeh')
     else if (args[0] === 'list') {
         if(args[1] == 'utang'){
             if(!args[2]){
                 await message.reply('masukan parameter orang yang dicari! menghadeh. ex: oi list utang joji')
             } else {
-                const utang_list = await readData(args[2]) 
-                let list = '~ LIST UTANG ~\n'
-                await Promise.all(utang_list.map( async utang => {
-                    list += `${utang.utang_origin} - ${utang.utang_target} : Rp. ${new Intl.NumberFormat().format(utang.dataValues.total_amount)}\n`
-                }))
-                await message.reply(list)
+                printReply(message, args[2])
             }
         } else {
-            const utang_list = await readData() 
-            let list = '~ LIST UTANG ~\n'
-            await Promise.all(utang_list.map( async utang => {
-                list += `${utang.utang_origin} - ${utang.utang_target} : Rp. ${new Intl.NumberFormat().format(utang.dataValues.total_amount)}\n`
-            }))
-            await message.reply(list)
+            printReply(message)
         }
     } 
     else {
@@ -95,28 +96,33 @@ client.on('message', async message => {
             if (args[1] == 'utang') {
                 if (target_to_origin > 0) {
                     if(target_to_origin > parseInt(args[3])){
-                        await createData(args[2], args[0], `-${args[3]}`)
+                        await createData(message,args[2], args[0], `-${args[3]}`)
                         await message.reply(`utang berhasil ditambahkan`);
+                        printReply(message)
                     } else {
                         let utang_left = Math.abs(target_to_origin - parseInt(args[3]))
-                        await createData(args[2], args[0], `-${target_to_origin}`)
-                        await createData(args[0], args[2], `${utang_left}`)
+                        await createData(message,args[2], args[0], `-${target_to_origin}`)
+                        await createData(message,args[0], args[2], `${utang_left}`)
                         await message.reply(`utang berhasil ditambahkan`);
+                        printReply(message)
                     }
                 } else {
-                    await createData(args[0], args[2], args[3])
+                    await createData(message,args[0], args[2], args[3])
                     await message.reply(`utang berhasil ditambahkan`);
+                    printReply(message)
                 }
             } 
             else if (args[1] == 'bayar') {
                 if(origin_to_target < parseInt(args[3])){
-                    await createData(args[0], args[2], `-${origin_to_target}`)
-                    await createData(args[2], args[0], parseInt(args[3]) - origin_to_target)
+                    await createData(message,args[0], args[2], `-${origin_to_target}`)
+                    await createData(message,args[2], args[0], parseInt(args[3]) - origin_to_target)
                     await message.reply(`utang berhasil dibayar`);
+                    printReply(message)
                 } 
                 else {
-                    await createData(args[0], args[2], `-${parseInt(args[3])}`)
+                    await createData(message,args[0], args[2], `-${parseInt(args[3])}`)
                     await message.reply(`utang berhasil dibayar`);
+                    printReply(message)
                 }
             }
             else {
