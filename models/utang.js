@@ -17,6 +17,14 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.INTEGER,
             allowNull: false
         },
+        utang_issuedby: {
+            type: Sequelize.STRING,
+            allowNull: false,
+        },
+        utang_issuedchannel: {
+            type: Sequelize.STRING,
+            allowNull: false,
+        }
     }, {});
     return Model;
 };

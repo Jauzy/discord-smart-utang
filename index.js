@@ -1,4 +1,5 @@
 require('dotenv').config()
+const moment = require('moment')
 
 const {
     Client,
@@ -47,13 +48,14 @@ async function readData(origin, target) {
 }
 
 async function createData(message,origin, target, amount){
-    return await Utang.create({
+    let data = await Utang.create({
         utang_origin: origin,
         utang_target: target,
         utang_amount: amount,
         utang_issuedby: message.member.user.username,
         utang_issuedchannel: message.member.guild.name
     })
+    return data
 }
 
 async function printReply(message, args){
@@ -72,8 +74,8 @@ async function printLogs(message){
     let list = '~ LOG UTANG ~\n'
     await Promise.all(utang_list.map( async utang => {
         let cmd = 'bayar'
-        if(utang.dataValues.total_amount > 0) cmd = 'utang'
-        list += `Transaction '${cmd.toUpperCase()}' from ${utang.utang_origin} to ${utang.utang_target} Rp. ${new Intl.NumberFormat().format(utang.dataValues.total_amount)} on ${utang.createdAt}, issued by ${utang.utang_issuedby} on ${utang.utang_issuedchannel}\n`
+        if(utang.total_amount > 0) cmd = 'utang'
+        list += `Transaction '${cmd.toUpperCase()}' from ${utang.utang_origin} to ${utang.utang_target} Rp. ${new Intl.NumberFormat().format(utang.dataValues.utang_amount)} on ${moment(utang.createdAt).locale('id').format('Do MMMM YYYY')}, issued by ${utang.utang_issuedby} on ${utang.utang_issuedchannel}\n`
     }))
     await message.reply(list)
 }
