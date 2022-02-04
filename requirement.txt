@@ -4,3 +4,4 @@ sequelize
 pg
 pg-hstore
 nodemon
+moment
