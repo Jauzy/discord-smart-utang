@@ -13,13 +13,13 @@ const sequelize = new Sequelize(dbConfig.database, dbConfig.user, dbConfig.passw
         acquire: dbConfig.pool.acquire,
         idle: dbConfig.pool.idle
     },
-    // ssl: true,
-    // dialectOptions: {
-    //     ssl: {
-    //         require: true,
-    //         rejectUnauthorized: false
-    //     }
-    // },
+    ssl: true,
+    dialectOptions: {
+        ssl: {
+            require: true,
+            rejectUnauthorized: false
+        }
+    },
 });
 
 const db = {};
