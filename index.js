@@ -86,7 +86,8 @@ client.once('ready', () => {
 });
 
 client.on('message', async message => {
-    if (!message.content.startsWith(prefix) || message.author.bot) return
+    const fromDiscord = message.content.toLowerCase();
+    if (!fromDiscord.startsWith(prefix) || message.author.bot) return
     const args = message.content.slice(prefix.length+1).split(/ +/)
 
     if(!args[0]) await message.reply('oi ngapain su, masukin commandnya lah. menghadeh')
@@ -105,8 +106,12 @@ client.on('message', async message => {
         }
     } 
     else {
+        const listBadut = ['mike', 'joji', 'rery', 'imam', 'syafiq', 'akbar']
         if(!args[0] || !args[1] || !args[2] || !args[3])
             await message.reply('oi commandnya yang bener la. ex: oi joji utang imam 5000')
+        else if (!listBadut.includes(args[0]) || !listBadut.includes(args[2])) {
+            await message.reply('oi ada yg namanya salah 🤡 (mike,joji,rery,imam,syafiq,akbar)')
+        }
         else {
             let origin_to_target = await readData(args[0], args[2])
             let target_to_origin = await readData(args[2], args[0])
