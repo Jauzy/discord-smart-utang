@@ -156,7 +156,7 @@ client.on('message', async message => {
             // all command handle
             if (args[0] === 'all') { 
                 // divide the amount of utang to each kontrakanMember
-                args[3] = args[3]/(kontrakanMembers.length - 2)
+                args[3] = args[3]/(kontrakanMembers.length - 1)
 
                 for (const kontrakanMember of kontrakanMembers) {
                     // skip all and target member
