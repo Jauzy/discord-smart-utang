@@ -1,0 +1,7 @@
+DATABASE_URL	: postgres://cqhadvwmjpikta:b065026780e1e2e58287aab0336795ecc2b7259444495a3c654e3ba734a61cc6@ec2-54-208-139-247.compute-1.amazonaws.com:5432/d7a8qtq357815m
+DB_DATABASE	: d7a8qtq357815m
+DB_HOST 	: ec2-54-208-139-247.compute-1.amazonaws.com
+DB_PASSWORD	: b065026780e1e2e58287aab0336795ecc2b7259444495a3c654e3ba734a61cc6
+DB_USER	: cqhadvwmjpikta
+PREFIX	: oi
+TOKEN	: OTM3NzA5NDgzNjE3MDI2MTAw.YffsAg.EpslS_KX_lrhRgej7lUCilNetQw
