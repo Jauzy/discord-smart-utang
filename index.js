@@ -30,6 +30,7 @@ let listUtang = require('./commands/listUtang')
 let generateUtang = require('./commands/generateUtang')
 let createBayar = require('./commands/createBayar')
 let mergeUtang = require('./commands/mergeUtang')
+let help = require('./commands/help')
 
 client.on('message', async message => {
     const fromDiscord = message.content.toLowerCase();
@@ -49,6 +50,9 @@ client.on('message', async message => {
     }
     else if(command == 'merge') {
         mergeUtang(args, message)
+    }
+    else if(command == 'help') {
+        help(args, message)
     }
 })
 

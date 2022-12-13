@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  web:
+    build:
+      context: ./
+    volumes:
+      - .:/usr/src/app
+    command: node index.js
+    ports: 
+      - "49160:8080"
+    env_file:
+      - .env
