@@ -32,7 +32,6 @@ let createBayar = require('./commands/createBayar')
 let mergeUtang = require('./commands/mergeUtang')
 let help = require('./commands/help')
 
-
 client.on('message', async message => {
     const fromDiscord = message.content.toLowerCase();
     if (!fromDiscord.startsWith(prefix) || message.author.bot) return
